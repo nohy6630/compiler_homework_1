@@ -39,7 +39,7 @@ void error(int i);
 RET num;
 char ch=' ';
 
-void main()
+int main()
 {
     RET result;
     get_token();
@@ -53,6 +53,7 @@ void main()
         else
             printf("%f\n", result.f);
     }
+    return 0;
 }
 
 RET calculate(RET a, int op, RET b)
@@ -72,7 +73,6 @@ RET calculate(RET a, int op, RET b)
             break;
         case MINUS:
             ret.f = x - y;
-
             break;
         case STAR:
             ret.f = x * y;
@@ -156,7 +156,7 @@ RET factor()
 
 void skip_whitespace()
 {
-    while (ch == ' ' || ch == '\t' || ch == '\n')
+    while (ch == ' ' || ch == '\t')
         ch = getchar();
 }
 
@@ -169,7 +169,7 @@ void get_token()
         num.i = 0;
         do
         {
-            num.i += num.i * 10 + (ch - '0');
+            num.i = num.i * 10 + (ch - '0');
             ch = getchar();
             skip_whitespace();
         } while (isdigit(ch));
@@ -184,7 +184,7 @@ void get_token()
                 float offset = 0.1;
                 do
                 {
-                    num.f += num.f + offset * (ch - '0');
+                    num.f = num.f + offset * (ch - '0');
                     offset *= 0.1f;
                     ch = getchar();
                     skip_whitespace();
@@ -200,10 +200,20 @@ void get_token()
         ch = getchar();
         token = PLUS;
     }
+    else if (ch == '-')
+    {
+        ch = getchar();
+        token = MINUS;
+    }
     else if (ch == '*')
     {
         ch = getchar();
         token = STAR;
+    }
+    else if (ch == '/')
+    {
+        ch = getchar();
+        token = DIV;
     }
     else if (ch == '(')
     {
@@ -215,7 +225,7 @@ void get_token()
         ch = getchar();
         token = RP;
     }
-    else if (ch == EOF)
+    else if (ch == '\n')
         token = END;
     else
         error(5);
@@ -224,7 +234,6 @@ void get_token()
 void warning(int i)
 {
     printf("warning\n");
-    exit(1);
 }
 
 void error(int i)
