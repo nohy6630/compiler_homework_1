@@ -1,11 +1,14 @@
 #include <stdio.h>
-#define BUF_SIZE 4096
+#include <ctype.h>
+#include <stdlib.h>
 
 enum
 {
     NUMBER,
     PLUS,
+    MINUS,
     STAR,
+    DIV,
     LP,
     RP,
     END
@@ -24,48 +27,114 @@ typedef struct
     float f;
 } RET;
 
-int num, idx = 0;
-char input[BUF_SIZE];
+RET calculate(RET a, int op, RET b);
+RET expression();
+RET term();
+RET factor();
+void skip_whitespace();
+void get_token();
+void warning(int i);
+void error(int i);
+
+RET num;
+char ch;
 
 void main()
 {
-    int result;
-    scanf("%s", &input);
+    RET result;
     get_token();
     result = expression();
     if (token != END)
         error(3);
     else
-        printf("%d\n", result);
+    {
+        if (result.t == INT)
+            printf("%d\n", result.i);
+        else
+            printf("%f\n", result.f);
+    }
 }
 
-int expression()
+RET calculate(RET a, int op, RET b)
 {
-    int result;
+    RET ret;
+    if (a.t != b.t)
+        warning(1);
+    float x = (float)(a.t == INT ? a.i : a.f);
+    float y = (float)(b.t == INT ? b.i : b.f);
+    if (a.t == FLT || b.t == FLT)
+    {
+        ret.t = FLT;
+        switch (op)
+        {
+        case PLUS:
+            ret.f = x + y;
+            break;
+        case MINUS:
+            ret.f = x - y;
+
+            break;
+        case STAR:
+            ret.f = x * y;
+            break;
+        case DIV:
+            if (y == 0)
+                error(7);
+            ret.f = x / y;
+        }
+    }
+    else
+    {
+        ret.t = INT;
+        switch (op)
+        {
+        case PLUS:
+            ret.i = (int)x + (int)y;
+            break;
+        case MINUS:
+            ret.i = (int)x - (int)y;
+            break;
+        case STAR:
+            ret.i = (int)x * (int)y;
+            break;
+        case DIV:
+            if (y == 0)
+                error(7);
+            ret.i = (int)x / (int)y;
+        }
+    }
+    return ret;
+}
+
+RET expression()
+{
+    RET result;
     result = term();
-    while (token == PLUS)
+    while (token == PLUS || token == MINUS)
     {
+        int op = token;
         get_token();
-        result = result + term();
+        result = calculate(result, op, term());
     }
     return result;
 }
 
-int term()
+RET term()
 {
-    int result;
+    RET result;
     result = factor();
-    while (token == STAR)
+    while (token == STAR || token == DIV)
     {
+        int op = token;
         get_token();
-        result = result * factor();
+        result = calculate(result, op, factor());
     }
     return result;
 }
 
-int factor()
+RET factor()
 {
-    int result;
+    RET result;
     if (token == NUMBER)
     {
         result = num;
@@ -85,32 +154,78 @@ int factor()
     return result;
 }
 
-void get_token()//실수도 읽을수있도록 수정해야함
+void skip_whitespace()
 {
-    while (input[idx] == ' ')
-        idx++;
-    if (input[idx] >= '0' && input[idx] <= '9')
+    while (ch == ' ' || ch == '\t' || ch == '\n')
+        ch = getchar();
+}
+
+void get_token()
+{
+    ch = ' ';
+    skip_whitespace();
+    if (isdigit(ch))
     {
+        num.t = INT;
+        num.i = 0;
+        do
+        {
+            num.i += num.i * 10 + (ch - '0');
+            ch = getchar();
+            skip_whitespace();
+        } while (isdigit(ch));
+        if (ch == '.')
+        {
+            ch = getchar();
+            skip_whitespace();
+            if (isdigit(ch))
+            {
+                num.t = FLT;
+                num.f = (float)num.i;
+                float offset = 0.1;
+                do
+                {
+                    num.f += num.f + offset * (ch - '0');
+                    offset *= 0.1;
+                    ch = getchar();
+                    skip_whitespace();
+                } while (isdigit(ch));
+            }
+            else
+                error(6);
+        }
         token = NUMBER;
-        while (input[idx] >= '0' && input[idx] <= '9')
-            idx++;
     }
-    else
+    else if (ch == '+')
     {
-        if (input[idx] == '+')
-            token = PLUS;
-        else if (input[idx] == '*')
-            token = STAR;
-        else if (input[idx] == '(')
-            token = LP;
-        else if (input[idx] == ')')
-            token = RP;
-        else if (input[idx] == 0)
-            token = END;
-        else
-            error(4);
-        idx++;
+        ch = getchar();
+        token = PLUS;
     }
+    else if (ch == '*')
+    {
+        ch = getchar();
+        token = STAR;
+    }
+    else if (ch == '(')
+    {
+        ch = getchar();
+        token = LP;
+    }
+    else if (ch == ')')
+    {
+        ch = getchar();
+        token = RP;
+    }
+    else if (ch == EOF)
+        token = EOF;
+    else
+        error(5);
+}
+
+void warning(int i)
+{
+    printf("warning\n");
+    exit(1);
 }
 
 void error(int i)
