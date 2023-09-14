@@ -37,7 +37,7 @@ void warning(int i);
 void error(int i);
 
 RET num;
-char ch;
+char ch=' ';
 
 void main()
 {
@@ -162,7 +162,6 @@ void skip_whitespace()
 
 void get_token()
 {
-    ch = ' ';
     skip_whitespace();
     if (isdigit(ch))
     {
@@ -186,7 +185,7 @@ void get_token()
                 do
                 {
                     num.f += num.f + offset * (ch - '0');
-                    offset *= 0.1;
+                    offset *= 0.1f;
                     ch = getchar();
                     skip_whitespace();
                 } while (isdigit(ch));
@@ -217,7 +216,7 @@ void get_token()
         token = RP;
     }
     else if (ch == EOF)
-        token = EOF;
+        token = END;
     else
         error(5);
 }
@@ -230,6 +229,6 @@ void warning(int i)
 
 void error(int i)
 {
-    printf("error\n");
+    printf("error%d\n",i);
     exit(1);
 }
