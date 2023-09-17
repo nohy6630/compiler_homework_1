@@ -33,8 +33,8 @@ RET term();
 RET factor();
 void skip_whitespace();
 void get_token();
-void warning(int i);
-void error(int i);
+void warning();
+void error();
 
 RET num;
 char ch=' ';
@@ -45,7 +45,7 @@ int main()
     get_token();
     result = expression();
     if (token != END)
-        error(3);
+        error();
     else
     {
         if (result.t == INT)
@@ -60,7 +60,7 @@ RET calculate(RET a, int op, RET b)
 {
     RET ret;
     if (a.t != b.t)
-        warning(1);
+        warning();
     float x = (float)(a.t == INT ? a.i : a.f);
     float y = (float)(b.t == INT ? b.i : b.f);
     if (a.t == FLT || b.t == FLT)
@@ -79,7 +79,7 @@ RET calculate(RET a, int op, RET b)
             break;
         case DIV:
             if (y == 0)
-                error(7);
+                error();
             ret.f = x / y;
         }
     }
@@ -99,7 +99,7 @@ RET calculate(RET a, int op, RET b)
             break;
         case DIV:
             if (y == 0)
-                error(7);
+                error();
             ret.i = (int)x / (int)y;
         }
     }
@@ -147,10 +147,10 @@ RET factor()
         if (token == RP)
             get_token();
         else
-            error(2);
+            error();
     }
     else
-        error(1);
+        error();
     return result;
 }
 
@@ -191,7 +191,7 @@ void get_token()
                 } while (isdigit(ch));
             }
             else
-                error(6);
+                error();
         }
         token = NUMBER;
     }
@@ -228,16 +228,16 @@ void get_token()
     else if (ch == '\n')
         token = END;
     else
-        error(5);
+        error();
 }
 
-void warning(int i)
+void warning()
 {
     printf("warning\n");
 }
 
-void error(int i)
+void error()
 {
-    printf("error%d\n",i);
+    printf("error\n");
     exit(1);
 }
