@@ -49,9 +49,9 @@ int main()
     else
     {
         if (result.t == INT)
-            printf("%d\n", result.i);
+            printf("result : %d\n", result.i);
         else
-            printf("%f\n", result.f);
+            printf("result : %f\n", result.f);
     }
     return 0;
 }
@@ -171,12 +171,10 @@ void get_token()
         {
             num.i = num.i * 10 + (ch - '0');
             ch = getchar();
-            skip_whitespace();
         } while (isdigit(ch));
         if (ch == '.')
         {
             ch = getchar();
-            skip_whitespace();
             if (isdigit(ch))
             {
                 num.t = FLT;
@@ -187,7 +185,6 @@ void get_token()
                     num.f = num.f + offset * (ch - '0');
                     offset *= 0.1f;
                     ch = getchar();
-                    skip_whitespace();
                 } while (isdigit(ch));
             }
             else
